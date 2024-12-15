@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: application-b-sa
+  namespace: application-b
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: application-b-config
+  namespace: application-b
+data:
+  PORT: "8000"
+  APPLICATION_B_URL: "http://application-b.application-b:8000"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: application-b-secret
+  namespace: application-b
+type: Opaque
+data:
+  SECRET_KEY: c2x1cm0=
+  DUMMY_KEY: ""
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: application-b
+  namespace: application-b
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: application-b
+  template:
+    metadata:
+      labels:
+        app: application-b
+    spec:
+      serviceAccountName: application-b-sa
+      containers:
+      - name: app
+        image: repository.slurm.io/k8s_for_devs/troubleshoot_dev:application-b-v1
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: "16Mi"
+            cpu: "100m"
+          limits:
+            memory: "32Mi"
+            cpu: "200m"
+        env:
+        - name: PORT
+          valueFrom:
+            configMapKeyRef:
+              name: application-b-config
+              key: PORT
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: application-b-secret
+              key: DUMMY_KEY
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: application-b
+  namespace: application-b
+spec:
+  selector:
+    app: application-b
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000

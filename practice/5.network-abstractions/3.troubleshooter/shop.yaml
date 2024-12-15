@@ -1,0 +1,174 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: shop-sa
+  namespace: shops
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shop-config
+  namespace: shops
+data:
+  PORT: "8000"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: shop-secret
+  namespace: shops
+type: Opaque
+data:
+  SECRET_KEY: cGFzc3dvcmQ=
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pv-claim
+  namespace: shops
+spec:
+  storageClassName: longhorn
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Mi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pv-claim-2
+  namespace: shops
+spec:
+  storageClassName: longhorn
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Mi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shop
+  namespace: shops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shop
+  template:
+    metadata:
+      labels:
+        app: shop
+    spec:
+      serviceAccountName: shop-sa
+      initContainers:
+      - name: app-init
+        image: repository.slurm.io/k8s_for_devs/troubleshoot_dev_task2:v1
+        imagePullPolicy: IfNotPresent
+        command: ["/app/main"]
+        args: ["init"]
+        resources:
+          requests:
+            memory: "16Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "2000m"
+        env:
+        - name: STORAGE_PATH
+          value: "/storage"
+        volumeMounts:
+          - mountPath: "/storage"
+            name: cache-2
+      containers:
+      - name: app
+        image: repository.slurm.io/k8s_for_devs/troubleshoot_dev_task2:v1
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8000
+          initialDelaySeconds: 3
+          periodSeconds: 2
+          timeoutSeconds: 1
+          failureThreshold: 5
+        readinessProbe:
+          httpGet:
+            path: /healthr
+            port: 8000
+          initialDelaySeconds: 2
+          periodSeconds: 2
+          timeoutSeconds: 1
+        resources:
+          requests:
+            memory: "16Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "2000m"
+        env:
+        - name: PORT
+          valueFrom:
+            configMapKeyRef:
+              name: shop-config
+              key: PORT
+        - name: STORAGE_PATH
+          value: "/storage"
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: shop-secret
+              key: SECRET_KEY
+        volumeMounts:
+          - mountPath: "/storage"
+            name: cache
+      volumes:
+        - name: cache
+          persistentVolumeClaim:
+            claimName: pv-claim
+        - name: cache-2
+          persistentVolumeClaim:
+            claimName: pv-claim-2
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shop
+  namespace: shops
+spec:
+  selector:
+    app: shop
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: shop-ingress
+  namespace: shops
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: "slurm-shop.s000000.edu.slurm.io"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: shop
+            port:
+              number: 8080

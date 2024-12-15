@@ -1,0 +1,11 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-php-conf
+data:
+  php.ini: |
+    [php]
+    register_globals = off
+    track_errors = yes
+...

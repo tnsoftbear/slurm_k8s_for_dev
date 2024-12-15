@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: application-a-sa
+  namespace: application-a
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: application-a-config
+  namespace: application-a
+data:
+  PORT: "8000"
+  APPLICATION_B_URL: "http://application-b:8000"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: application-a-secret
+  namespace: application-a
+type: Opaque
+data:
+  SECRET_KEY: cGFzc3dvcmQ=
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: application-a
+  namespace: application-a
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: application-a
+  template:
+    metadata:
+      labels:
+        app: application-a
+    spec:
+      serviceAccountName: application-a-sa
+      containers:
+      - name: app
+        image: repository.slurm.io/k8s_for_devs/troubleshoot_dev:application-a-v1
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: "16Mi"
+            cpu: "100m"
+          limits:
+            memory: "64Mi"
+            cpu: "200m"
+        env:
+        - name: PORT
+          valueFrom:
+            configMapKeyRef:
+              name: application-a-config
+              key: PORT
+        - name: APPLICATION_B_URL
+          valueFrom:
+            configMapKeyRef:
+              name: application-a-config
+              key: APPLICATION_B_URL
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: application-a-secret
+              key: SECRET_KEY
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: application-a
+  namespace: application-a
+spec:
+  selector:
+    app: application-a
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
