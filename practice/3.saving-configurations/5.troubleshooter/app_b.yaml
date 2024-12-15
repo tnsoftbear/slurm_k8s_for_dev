@@ -60,7 +60,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: application-b-secret
-              key: DUMMY_KEY
+              key: SECRET_KEY
 ---
 apiVersion: v1
 kind: Service
