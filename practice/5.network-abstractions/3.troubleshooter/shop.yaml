@@ -162,7 +162,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: "slurm-shop.s000000.edu.slurm.io"
+  - host: "slurm-shop.s074373.edu.slurm.io"
     http:
       paths:
       - path: /
