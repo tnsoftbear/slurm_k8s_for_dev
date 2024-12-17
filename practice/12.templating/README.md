@@ -8,7 +8,6 @@ helm repo update
 
 helm search hub kube-ops
 helm show values southbridge/kube-ops-view > values.yaml
-
 ```
 
 2) Правим `values.yaml`:

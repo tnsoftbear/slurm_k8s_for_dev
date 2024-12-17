@@ -4,6 +4,7 @@ kind: Pod
 metadata:
   name: "{{ .Release.Name }}-credentials-test"
   annotations:
+    "helm.sh/hook-delete-policy": hook-succeeded
     "helm.sh/hook": test-success
 spec:
   {{- if .Values.podSecurityContext.enabled }}

@@ -1,0 +1,12 @@
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 80m
+    memory: 64Mi
+service:
+  internalPort: 80
+annotations:
+  canary: true
+  version: v1.2.3

@@ -26,7 +26,7 @@ spec:
           readinessProbe:
             failureThreshold: 2
             httpGet:
-              path: /123
+              path: /
               port: 80
             periodSeconds: 3
             successThreshold: 1
@@ -34,7 +34,7 @@ spec:
           livenessProbe:
             failureThreshold: 3
             httpGet:
-              path: /123
+              path: /
               port: 80
             periodSeconds: 10
             successThreshold: 1
@@ -43,8 +43,8 @@ spec:
           resources:
             requests:
               cpu: 50m
-              memory: 100Ti
+              memory: 500Mi
             limits:
               cpu: 100m
-              memory: 100Ti
+              memory: 500Mi
 

@@ -8,6 +8,6 @@ roleRef:
   kind: ClusterRole
   name: view
 subjects:
-  - kind: ServiceAccount
-    name: user
-    namespace: s<номер студента>
+- kind: ServiceAccount
+  name: user
+  namespace: s074373
