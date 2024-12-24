@@ -4,6 +4,7 @@ apiVersion: v1
 metadata:
   name: fileshare
 spec:
+  storageClassName: local-storage
   accessModes:
   - ReadWriteMany
   resources:

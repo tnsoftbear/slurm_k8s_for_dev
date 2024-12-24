@@ -4,7 +4,6 @@ kind: ServiceAccount
 metadata:
   name: shop-sa
   namespace: shops
-
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -13,7 +12,6 @@ metadata:
   namespace: shops
 data:
   PORT: "8000"
-
 ---
 apiVersion: v1
 kind: Secret
@@ -23,7 +21,6 @@ metadata:
 type: Opaque
 data:
   SECRET_KEY: cGFzc3dvcmQ=
-
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -33,11 +30,10 @@ metadata:
 spec:
   storageClassName: longhorn
   accessModes:
-    - ReadWriteOnce
+  - ReadWriteOnce
   resources:
     requests:
-      storage: 50Mi
-
+      storage: 1Gi # fix  (но кажется лишний)
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -47,11 +43,10 @@ metadata:
 spec:
   storageClassName: longhorn
   accessModes:
-    - ReadWriteOnce
+  - ReadWriteOnce
   resources:
     requests:
-      storage: 50Mi
-
+      storage: 1Gi # fix
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -73,8 +68,8 @@ spec:
       - name: app-init
         image: repository.slurm.io/k8s_for_devs/troubleshoot_dev_task2:v1
         imagePullPolicy: IfNotPresent
-        command: ["/app/main"]
-        args: ["init"]
+        command: [ "/app/main" ]
+        args: [ "init" ]
         resources:
           requests:
             memory: "16Mi"
@@ -86,8 +81,8 @@ spec:
         - name: STORAGE_PATH
           value: "/storage"
         volumeMounts:
-          - mountPath: "/storage"
-            name: cache-2
+        - mountPath: "/storage"
+          name: cache-2
       containers:
       - name: app
         image: repository.slurm.io/k8s_for_devs/troubleshoot_dev_task2:v1
@@ -98,7 +93,7 @@ spec:
             port: 8000
           initialDelaySeconds: 3
           periodSeconds: 2
-          timeoutSeconds: 1
+          timeoutSeconds: 5
           failureThreshold: 5
         readinessProbe:
           httpGet:
@@ -106,7 +101,7 @@ spec:
             port: 8000
           initialDelaySeconds: 2
           periodSeconds: 2
-          timeoutSeconds: 1
+          timeoutSeconds: 5
         resources:
           requests:
             memory: "16Mi"
@@ -128,16 +123,15 @@ spec:
               name: shop-secret
               key: SECRET_KEY
         volumeMounts:
-          - mountPath: "/storage"
-            name: cache
+        - mountPath: "/storage"
+          name: cache-2 # fix
       volumes:
-        - name: cache
-          persistentVolumeClaim:
-            claimName: pv-claim
-        - name: cache-2
-          persistentVolumeClaim:
-            claimName: pv-claim-2
-
+      - name: cache
+        persistentVolumeClaim:
+          claimName: pv-claim
+      - name: cache-2
+        persistentVolumeClaim:
+          claimName: pv-claim-2
 ---
 apiVersion: v1
 kind: Service
@@ -148,9 +142,9 @@ spec:
   selector:
     app: shop
   ports:
-    - protocol: TCP
-      port: 8000
-      targetPort: 8000
+  - protocol: TCP
+    port: 8080 # fix 
+    targetPort: 8000
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
