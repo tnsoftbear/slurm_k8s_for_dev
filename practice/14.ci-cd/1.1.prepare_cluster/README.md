@@ -5,7 +5,7 @@
 Для этого запускаем скрипт `setup.sh`, перед запуском `<Ваш номер логина> меняем на свой номер студента!!`.
 
 ```bash
-bash ~/slurm/practice/14.ci-cd/1.1.prepare_cluster/setup.sh s<Ваш номер логина>-xpaste production
+bash ~/slurm/practice/14.ci-cd/1.1.prepare_cluster/setup.sh s074373-xpaste production
 ```
 
 В конце своего выполнения скрипт выдаст нам токен, который необходимо сохранить.
@@ -19,7 +19,7 @@ bash ~/slurm/practice/14.ci-cd/1.1.prepare_cluster/setup.sh s<Ваш номер 
 Для этого открываем в браузере свой форк xpaste. `<Ваш номер логина> меняем на свой номер студента`:
 
 ```bash
-https://gitlab.slurm.io/s<Ваш номер логина>/xpaste
+https://gitlab.slurm.io/s074373/xpaste
 ```
 
 * Добавляем переменную

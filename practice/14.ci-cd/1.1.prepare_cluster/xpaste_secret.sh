@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NS=s<Ваш номер логина>-xpaste-production
+NS=s074373-xpaste-production
 
 kubectl delete secret slurm-xpaste --namespace "$NS"
 

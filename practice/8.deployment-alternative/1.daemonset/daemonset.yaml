@@ -18,6 +18,16 @@ spec:
       labels:
         app: node-exporter
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - k3d-bishkek-agent-1
+                - k3d-bishkek-server-0
       containers:
       - name: node-exporter
         image: k8s.gcr.io/pause:3.3
@@ -30,10 +40,18 @@ spec:
             cpu: 10m
             memory: 64Mi
       nodeSelector:
-        beta.kubernetes.io/os: linux
+        kubernetes.io/os: linux
       securityContext:
         runAsNonRoot: true
         runAsUser: 65534
       tolerations:
       - effect: NoSchedule
         key: node-role.kubernetes.io/ingress
+      
+      # Добавить, для разрешения размещения пода на мастер ноде
+      #- key: "node-role.kubernetes.io/master"
+      #  effect: "NoSchedule"
+
+      # Разрешить NoSchedule тайнт для любых ключей:
+      #- effect: NoSchedule
+      #  operator: Exists
